@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mochi · Inbox</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FFF8F0;--ink:#2D2A3E;--mute:#8A869C;--card:#fff;--line:#F0E6DA;--blue:#54A0FF;--yellow:#FECA57;--green:#1DD1A1;--purple:#8E7CF8;--orange:#FF9F43;--coral:#FF6B6B;--pink:#FF7EB6}
+@media(prefers-color-scheme:dark){:root{--bg:#1E1B2B;--ink:#F4EFFF;--mute:#9A95B0;--card:#292539;--line:#38334D}}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{font-family:Nunito,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-weight:500;font-size:15px}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input,textarea{font:inherit;color:inherit;border:0;outline:0;background:none}
+#login{height:100%;display:grid;place-items:center;text-align:center;padding:24px}
+#login .blob{width:96px;height:96px;border-radius:32px;background:var(--pink);display:grid;place-items:center;font-size:44px;margin:0 auto 20px;transform:rotate(-6deg)}
+#login h1{font-size:44px;font-weight:800;letter-spacing:-1px}
+#login p{color:var(--mute);margin:8px 0 28px}
+.btn{padding:12px 22px;border-radius:16px;font-weight:800;background:var(--ink);color:var(--bg)}
+.btn.c{background:var(--purple);color:#fff}
+.btn.g{background:var(--line);color:var(--ink);margin-left:8px}
+#app{display:none;height:100%;grid-template-columns:240px 1fr}
+#side{padding:20px 14px;display:flex;flex-direction:column;gap:6px;border-right:2px solid var(--line)}
+.logo{display:flex;align-items:center;gap:10px;font-size:24px;font-weight:800;padding:0 10px 14px}
+.logo i{width:34px;height:34px;border-radius:12px;background:var(--pink);display:grid;place-items:center;font-style:normal;font-size:18px;transform:rotate(-6deg)}
+#compose{background:var(--purple);color:#fff;padding:13px;border-radius:18px;font-weight:800;margin-bottom:10px}
+.f{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;font-weight:700;color:var(--mute);text-align:left}
+.f b{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;font-size:15px;background:color-mix(in srgb,var(--c) 22%,transparent)}
+.f.on{background:color-mix(in srgb,var(--c) 18%,transparent);color:var(--ink)}
+.f .n{margin-left:auto;font-size:12px;background:var(--c);color:#fff;border-radius:99px;padding:1px 8px}
+#me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px;font-size:13px;color:var(--mute)}
+#me img,.av{width:36px;height:36px;border-radius:50%;flex:none}
+.av{display:grid;place-items:center;color:#fff;font-weight:800}
+#main{display:flex;flex-direction:column;min-width:0;height:100%}
+#top{display:flex;gap:10px;align-items:center;padding:16px 20px}
+#menu{display:none}
+.search{flex:1;display:flex;align-items:center;gap:10px;background:var(--card);border-radius:18px;padding:0 16px;height:46px}
+.search input{flex:1}
+.ib{width:42px;height:42px;border-radius:14px;background:var(--card);display:grid;place-items:center;font-size:17px}
+.ib:hover{background:var(--line)}
+#bar{display:flex;gap:8px;align-items:center;padding:0 20px 10px;min-height:44px;color:var(--mute);font-weight:700}
+#list{flex:1;overflow:auto;padding:0 20px 20px}
+.row{display:flex;align-items:center;gap:14px;padding:12px 14px;background:var(--card);border-radius:18px;margin-bottom:8px;cursor:pointer;border:2px solid transparent}
+.row:hover{border-color:var(--line)}
+.row.unread .fr,.row.unread .sj{font-weight:800}
+.row.unread{box-shadow:inset 5px 0 0 var(--blue)}
+.row .fr{width:170px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .tx{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .sn{color:var(--mute)}
+.row .dt{font-size:12px;color:var(--mute);flex:none;width:52px;text-align:right}
+.ck{width:20px;height:20px;border-radius:7px;border:2px solid var(--line);flex:none;display:grid;place-items:center;font-size:12px;color:#fff}
+.ck.on{background:var(--purple);border-color:var(--purple)}
+.star{font-size:20px;color:var(--line);flex:none}
+.star.on{color:var(--yellow)}
+.empty{text-align:center;color:var(--mute);padding:80px 0}
+.empty div{font-size:56px}
+#read{display:none;flex:1;flex-direction:column;padding:0 20px 20px;min-height:0}
+#read .hd{background:var(--card);border-radius:22px 22px 0 0;padding:20px 24px;border-bottom:2px solid var(--line)}
+#read h2{font-size:24px;font-weight:800;margin-bottom:12px}
+#read .meta{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--mute)}
+#read .meta b{color:var(--ink);display:block;font-size:15px}
+#read iframe{flex:1;border:0;background:#fff;width:100%;border-radius:0 0 22px 22px;min-height:0}
+#read .act{display:flex;gap:8px;margin-top:14px}
+.chip{padding:8px 16px;border-radius:14px;font-weight:800;font-size:13px;color:#fff}
+#modal{position:fixed;right:24px;bottom:24px;width:min(480px,calc(100vw - 32px));background:var(--card);border-radius:24px;box-shadow:0 12px 40px #0003;display:none;flex-direction:column;overflow:hidden;z-index:9}
+#modal .mh{background:var(--purple);color:#fff;padding:14px 20px;font-weight:800;display:flex;justify-content:space-between}
+#modal input,#modal textarea{padding:14px 20px;border-bottom:2px solid var(--line);width:100%}
+#modal textarea{height:200px;resize:none;border:0}
+#modal .mf{padding:12px 20px;display:flex;gap:8px;align-items:center}
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:16px;font-weight:700;display:none;z-index:10}
+@media(max-width:760px){
+#app{grid-template-columns:1fr}
+#side{position:fixed;inset:0 25% 0 0;background:var(--bg);z-index:8;transform:translateX(-100%);transition:.2s}
+#side.open{transform:none}
+#menu{display:grid}
+.row .fr{width:100px}.row .sn{display:none}.row .dt{width:auto}
+}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div>
+    <div class="blob">💌</div>
+    <h1>Mochi</h1>
+    <p>A soft, colourful home for your Gmail.</p>
+    <button class="btn c" id="signin">Continue with Google</button><button class="btn g" id="demo">Try demo</button>
+  </div>
+</div>
+
+<div id="app">
+  <aside id="side">
+    <div class="logo"><i>💌</i>Mochi</div>
+    <button id="compose">✏️ Compose</button>
+    <nav id="folders" style="display:flex;flex-direction:column;gap:4px"></nav>
+    <div id="me"></div>
+  </aside>
+  <section id="main">
+    <div id="top">
+      <button class="ib" id="menu">☰</button>
+      <label class="search"><span>🔍</span><input id="q" placeholder="Search mail  ( / )"></label>
+      <button class="ib" id="refresh" title="Refresh">↻</button>
+    </div>
+    <div id="bar"></div>
+    <div id="list"></div>
+    <div id="read"></div>
+  </section>
+</div>
+
+<div id="modal">
+  <div class="mh"><span id="mt">New message</span><button id="mx" style="color:#fff">✕</button></div>
+  <input id="to" placeholder="To">
+  <input id="sub" placeholder="Subject">
+  <textarea id="body" placeholder="Say something nice…"></textarea>
+  <div class="mf"><button class="btn c" id="send">Send</button></div>
+</div>
+<div id="toast"></div>
+
+<script type="module">
+/* ───────── 1. PASTE YOUR FIREBASE CONFIG HERE (Firebase console → Project settings → Web app) ───────── */
+const firebaseConfig = {
+  apiKey: "AIzaSyBrQTZb8Zxdl1z90S0GU1q0yAiHkeDJjBk",
+  authDomain: "auth-plain.firebaseapp.com",
+  projectId: "auth-plain",
+  storageBucket: "auth-plain.firebasestorage.app",
+  messagingSenderId: "77679848776",
+  appId: "1:77679848776:web:e7a6b61c2ba62b46f4d77d",
+  measurementId: "G-Z10N8CXZ0Z"
+};
+/* ──────────────────────────────────────────────────────────────────────────────────────────────────── */
+
+const $ = s => document.querySelector(s);
+const FOLDERS = [
+  ["INBOX","Inbox","#54A0FF","📥"],["STARRED","Starred","#FECA57","⭐"],["SENT","Sent","#1DD1A1","🚀"],
+  ["DRAFT","Drafts","#8E7CF8","📝"],["SPAM","Spam","#FF9F43","🫧"],["TRASH","Trash","#FF6B6B","🗑️"]
+];
+const COLORS = ["#FF6B6B","#FF9F43","#1DD1A1","#54A0FF","#8E7CF8","#FF7EB6","#10AC84","#EE5A24"];
+const S = { demo:false, user:null, token:null, folder:"INBOX", q:"", msgs:[], next:null, sel:new Set(), open:null, loading:false, unread:0 };
+let auth, authMod, firebaseApp;
+
+/* ── helpers ── */
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const hash = s => [...s].reduce((a,c) => (a*31 + c.charCodeAt(0)) >>> 0, 7);
+const color = s => COLORS[hash(s || "?") % COLORS.length];
+const b64u = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+const unb64u = s => { try { return decodeURIComponent(escape(atob(s.replace(/-/g,"+").replace(/_/g,"/")))); } catch { return ""; } };
+const toast = t => { const e = $("#toast"); e.textContent = t; e.style.display = "block"; clearTimeout(toast.t); toast.t = setTimeout(() => e.style.display = "none", 2600); };
+function fmt(ms){
+  const d = new Date(ms), n = new Date();
+  if (d.toDateString() === n.toDateString()) return d.toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});
+  return d.toLocaleDateString([], {month:"short",day:"numeric"});
+}
+const parseFrom = f => { const m = /^\s*"?([^"<]*?)"?\s*<([^>]+)>/.exec(f || ""); return m ? {name:m[1].trim() || m[2], email:m[2]} : {name:f||"Unknown", email:f||""}; };
+const avatar = n => `<div class="av" style="background:${color(n)}">${esc((n||"?")[0].toUpperCase())}</div>`;
+
+/* ── demo data ── */
+const now = Date.now(), H = 36e5;
+const DEMO = [
+  ["Notion","hello@notion.so","Your weekly digest is ready ✨","Here's what your team got done this week — 14 pages updated, 3 new templates.",.4,1],
+  ["Priya Nair","priya@rvu.edu.in","Lab report — can you review?","Hey! I've shared the draft for the ML lab report. Could you look at section 3 before tonight?",2,1],
+  ["GitHub","noreply@github.com","[mochi] New pull request #42","aditya opened a pull request: Add inbox keyboard shortcuts and bulk actions.",5,0],
+  ["Placement Cell","placements@rvu.edu.in","Campus drive: Zoho, Freshworks, Razorpay","Registrations close Friday 6 PM. Please update your resume on the portal.",9,1],
+  ["Figma","team@figma.com","Maya commented on Mochi UI","“Love the pill buttons — can we try a bigger radius on cards?”",20,0],
+  ["Mom","mom@family.com","Sunday lunch?","Are you coming home this weekend? Making your favourite dosa 🥞",30,0],
+  ["Coursera","no-reply@coursera.org","You're 80% through Deep Learning","Finish your last two modules to earn your certificate.",50,0],
+  ["Spotify","no-reply@spotify.com","Your Wrapped is early 🎧","You listened to 41,203 minutes of music. Wow.",72,0],
+  ["Poéthra","club@poethra.in","Open mic night — lineup locked","We have 12 performers confirmed. Poster attached, please share!",100,0],
+  ["AWS Builders","events@aws.example","Student Builder Club meetup","Join us Thursday for a serverless workshop. Snacks included.",140,0]
+].map((d,i) => ({id:"d"+i,name:d[0],email:d[1],subject:d[2],snippet:d[3],date:now-d[4]*H,unread:!!d[5],starred:i===1||i===3,labels:["INBOX"],
+  html:`<div style="font:16px/1.6 Nunito,system-ui,sans-serif;padding:28px;color:#2D2A3E"><p>${esc(d[3])}</p><p>Thanks,<br>${esc(d[0])}</p><p style="margin-top:24px;padding:16px;border-radius:16px;background:#FFF1E0">This is a demo message. Sign in with Google to see your real inbox.</p></div>`}));
+
+/* ── data layer ── */
+async function gapi(path, opt = {}){
+  const r = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/" + path, {
+    ...opt, headers:{Authorization:"Bearer " + S.token, "Content-Type":"application/json"}
+  });
+  if (r.status === 401){ toast("Session expired — sign in again"); logout(); throw new Error("401"); }
+  if (!r.ok) throw new Error(await r.text());
+  return r.status === 204 ? null : r.json();
+}
+const hdr = (m, n) => (m.payload?.headers || []).find(h => h.name.toLowerCase() === n.toLowerCase())?.value || "";
+function norm(m){
+  const f = parseFrom(hdr(m, S.folder === "SENT" || S.folder === "DRAFT" ? "To" : "From"));
+  return {id:m.id, threadId:m.threadId, name:f.name, email:f.email, subject:hdr(m,"Subject") || "(no subject)", snippet:m.snippet || "",
+    date:+m.internalDate, unread:(m.labelIds||[]).includes("UNREAD"), starred:(m.labelIds||[]).includes("STARRED"), labels:m.labelIds||[]};
+}
+async function list(reset){
+  if (S.loading) return;
+  S.loading = true; render();
+  try{
+    if (S.demo){
+      let r = DEMO.filter(m => S.folder === "STARRED" ? m.starred : S.folder === "INBOX" ? m.labels.includes("INBOX") : m.labels.includes(S.folder));
+      if (S.q) r = r.filter(m => (m.subject + m.snippet + m.name).toLowerCase().includes(S.q.toLowerCase()));
+      S.msgs = r; S.next = null;
+    } else {
+      const p = new URLSearchParams({maxResults:"20"});
+      if (S.q) p.set("q", S.q); else p.append("labelIds", S.folder);
+      if (["SPAM","TRASH"].includes(S.folder)) p.set("includeSpamTrash","true");
+      if (!reset && S.next) p.set("pageToken", S.next);
+      const r = await gapi("messages?" + p);
+      const full = await Promise.all((r.messages || []).map(m => gapi(`messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject`)));
+      const items = full.map(norm);
+      S.msgs = reset ? items : S.msgs.concat(items);
+      S.next = r.nextPageToken || null;
+    }
+  } catch(e){ if (e.message !== "401") toast("Couldn't load mail"); }
+  S.loading = false; render();
+}
+async function unreadCount(){
+  if (S.demo) return S.unread = DEMO.filter(m => m.unread).length;
+  try { S.unread = (await gapi("labels/INBOX")).messagesUnread || 0; } catch {}
+}
+async function modify(m, add = [], rem = []){
+  m.labels = m.labels.filter(l => !rem.includes(l)).concat(add);
+  m.unread = m.labels.includes("UNREAD"); m.starred = m.labels.includes("STARRED");
+  if (S.demo) return;
+  try { await gapi(`messages/${m.id}/modify`, {method:"POST", body:JSON.stringify({addLabelIds:add, removeLabelIds:rem})}); }
+  catch(e){ toast("Action failed"); }
+}
+async function trashMsg(m){
+  if (!S.demo) try { await gapi(`messages/${m.id}/${S.folder === "TRASH" ? "untrash" : "trash"}`, {method:"POST"}); } catch { return toast("Action failed"); }
+  else if (S.folder === "TRASH") m.labels = ["INBOX"]; else m.labels = ["TRASH"];
+}
+function bodyOf(p){
+  let html = "", text = "";
+  (function walk(x){
+    if (x.mimeType === "text/html" && x.body?.data) html ||= unb64u(x.body.data);
+    else if (x.mimeType === "text/plain" && x.body?.data) text ||= unb64u(x.body.data);
+    (x.parts || []).forEach(walk);
+  })(p);
+  return html || `<pre style="font:15px/1.6 Nunito,system-ui,sans-serif;white-space:pre-wrap;padding:24px">${esc(text)}</pre>`;
+}
+async function sendMail(to, subject, text, threadId){
+  if (S.demo) return;
+  const raw = `To: ${to}\r\nSubject: =?UTF-8?B?${btoa(unescape(encodeURIComponent(subject)))}?=\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n${text}`;
+  await gapi("messages/send", {method:"POST", body:JSON.stringify({raw:b64u(raw), threadId})});
+}
+
+/* ── auth ── */
+async function loadFirebase(){
+  if (auth) return;
+  const v = "10.14.1", base = `https://www.gstatic.com/firebasejs/${v}/`;
+  const [app, a] = await Promise.all([import(base + "firebase-app.js"), import(base + "firebase-auth.js")]);
+  authMod = a;
+  firebaseApp = app.getApps().length ? app.getApp() : app.initializeApp(firebaseConfig);
+  auth = a.getAuth(firebaseApp);
+  await a.setPersistence(auth, a.browserLocalPersistence);
+}
+async function signIn(){
+  const button = $("#signin");
+  button.disabled = true; button.textContent = "Connecting…";
+  try{
+    if (!auth) await loadFirebase();
+    const prov = new authMod.GoogleAuthProvider();
+    ["gmail.modify","gmail.send"].forEach(s => prov.addScope("https://www.googleapis.com/auth/" + s));
+    const res = await authMod.signInWithPopup(auth, prov);
+    const credential = authMod.GoogleAuthProvider.credentialFromResult(res);
+    if (!credential?.accessToken) throw new Error("Google did not grant Gmail access. Check the OAuth consent screen and Gmail API setup.");
+    S.token = credential.accessToken;
+    S.user = {name:res.user.displayName, email:res.user.email, photo:res.user.photoURL};
+    start();
+  } catch(e){
+    const message = e.code === "auth/unauthorized-domain"
+      ? "This domain is not authorized in Firebase Authentication. Add it under Authentication → Settings → Authorized domains."
+      : e.code === "auth/popup-blocked" ? "Allow pop-ups for this site, then try again."
+      : e.code === "auth/popup-closed-by-user" ? "Sign-in was cancelled."
+      : (e.message || "Google sign-in failed.").slice(0, 180);
+    toast(message);
+  } finally { button.disabled = false; button.textContent = "Continue with Google"; }
+}
+function logout(){
+  if (auth) authMod.signOut(auth);
+  S.token = null; S.user = null; S.demo = false;
+  $("#app").style.display = "none"; $("#login").style.display = "grid";
+}
+
+/* ── UI ── */
+function start(){
+  $("#login").style.display = "none"; $("#app").style.display = "grid";
+  $("#me").innerHTML = `${S.user.photo ? `<img src="${esc(S.user.photo)}" referrerpolicy="no-referrer">` : avatar(S.user.name)}<div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis"><b style="color:var(--ink)">${esc(S.user.name)}</b><br>${S.demo ? "demo mode" : esc(S.user.email)}</div><button class="ib" id="out" title="Sign out" style="width:34px;height:34px">⎋</button>`;
+  $("#out").onclick = logout;
+  go("INBOX");
+}
+async function go(f){
+  S.folder = f; S.q = ""; $("#q").value = ""; S.sel.clear(); S.open = null; S.msgs = []; S.next = null;
+  $("#side").classList.remove("open");
+  await list(true); unreadCount().then(render);
+}
+function render(){
+  $("#folders").innerHTML = FOLDERS.map(([id,name,c,ic]) =>
+    `<button class="f ${S.folder===id && !S.q ? "on":""}" data-f="${id}" style="--c:${c}"><b>${ic}</b>${name}${id==="INBOX" && S.unread ? `<span class="n">${S.unread}</span>` : ""}</button>`).join("");
+  $("#folders").querySelectorAll(".f").forEach(b => b.onclick = () => go(b.dataset.f));
+  const reading = !!S.open;
+  $("#list").style.display = reading ? "none" : "block";
+  $("#bar").style.display = reading ? "none" : "flex";
+  $("#read").style.display = reading ? "flex" : "none";
+  if (reading) return renderRead();
+  const n = S.sel.size;
+  $("#bar").innerHTML = n
+    ? `<span>${n} selected</span><button class="chip" data-a="read" style="background:var(--blue)">Mark read</button><button class="chip" data-a="unread" style="background:var(--green)">Unread</button>${S.folder==="INBOX"?`<button class="chip" data-a="archive" style="background:var(--orange)">Archive</button>`:""}<button class="chip" data-a="trash" style="background:var(--coral)">${S.folder==="TRASH"?"Restore":"Delete"}</button>`
+    : `<button class="ck ${S.msgs.length && n===S.msgs.length ? "on":""}" id="all"></button><span>${S.q ? "Results for “"+esc(S.q)+"”" : FOLDERS.find(f=>f[0]===S.folder)[1]}</span>`;
+  $("#bar").querySelectorAll("[data-a]").forEach(b => b.onclick = () => bulk(b.dataset.a));
+  const all = $("#all"); if (all) all.onclick = () => { S.msgs.forEach(m => S.sel.add(m.id)); render(); };
+  $("#list").innerHTML = S.msgs.map(m => `
+    <div class="row ${m.unread ? "unread":""}" data-id="${m.id}">
+      <button class="ck ${S.sel.has(m.id) ? "on":""}" data-ck>${S.sel.has(m.id) ? "✓":""}</button>
+      <button class="star ${m.starred ? "on":""}" data-st>★</button>
+      ${avatar(m.name)}
+      <div class="fr">${esc(m.name)}</div>
+      <div class="tx"><span class="sj">${esc(m.subject)}</span> <span class="sn">— ${esc(m.snippet)}</span></div>
+      <div class="dt">${fmt(m.date)}</div>
+    </div>`).join("")
+    + (S.loading ? `<div class="empty">Loading…</div>` : !S.msgs.length ? `<div class="empty"><div>🍡</div><p>Nothing here. Mochi approves.</p></div>` : "")
+    + (S.next && !S.loading ? `<div style="text-align:center"><button class="btn c" id="more">Load more</button></div>` : "");
+  $("#list").querySelectorAll(".row").forEach(r => {
+    const m = S.msgs.find(x => x.id === r.dataset.id);
+    r.onclick = e => {
+      if (e.target.closest("[data-ck]")){ S.sel.has(m.id) ? S.sel.delete(m.id) : S.sel.add(m.id); return render(); }
+      if (e.target.closest("[data-st]")){ modify(m, m.starred ? [] : ["STARRED"], m.starred ? ["STARRED"] : []).then(render); return render(); }
+      openMsg(m);
+    };
+  });
+  const more = $("#more"); if (more) more.onclick = () => list(false);
+}
+async function bulk(a){
+  const ms = S.msgs.filter(m => S.sel.has(m.id));
+  for (const m of ms){
+    if (a === "read") await modify(m, [], ["UNREAD"]);
+    if (a === "unread") await modify(m, ["UNREAD"], []);
+    if (a === "archive") await modify(m, [], ["INBOX"]);
+    if (a === "trash") await trashMsg(m);
+  }
+  if (["archive","trash"].includes(a)) S.msgs = S.msgs.filter(m => !S.sel.has(m.id));
+  S.sel.clear(); toast(a === "trash" ? "Done 🗑️" : "Done ✨"); render(); unreadCount().then(render);
+}
+async function openMsg(m){
+  S.open = m; m.html = m.html || null; render();
+  if (m.unread) modify(m, [], ["UNREAD"]).then(() => unreadCount().then(render));
+  if (!m.html && !S.demo){
+    try { const f = await gapi(`messages/${m.id}?format=full`); m.html = bodyOf(f.payload); m.to = hdr(f,"To"); m.replyTo = hdr(f,"Reply-To") || hdr(f,"From"); } catch { m.html = "<p>Couldn't load message.</p>"; }
+  }
+  if (S.open === m) renderRead();
+}
+function renderRead(){
+  const m = S.open;
+  $("#read").innerHTML = `
+    <div class="hd">
+      <div style="display:flex;gap:8px;margin-bottom:16px"><button class="ib" id="back">←</button>
+        <button class="ib" id="rarc" title="Archive">📦</button><button class="ib" id="rdel" title="Delete">🗑️</button><button class="ib" id="runr" title="Mark unread">✉️</button>
+        <button class="ib star ${m.starred?"on":""}" id="rst">★</button></div>
+      <h2>${esc(m.subject)}</h2>
+      <div class="meta">${avatar(m.name)}<div><b>${esc(m.name)}</b>${esc(m.email)} · ${new Date(m.date).toLocaleString([], {dateStyle:"medium", timeStyle:"short"})}</div></div>
+      <div class="act"><button class="chip" id="rep" style="background:var(--purple)">↩ Reply</button></div>
+    </div>
+    <iframe sandbox="allow-popups allow-popups-to-escape-sandbox" srcdoc="${esc('<base target="_blank"><style>body{margin:0;font-family:system-ui}</style>' + (m.html || '<p style="padding:24px;font-family:system-ui">Loading…</p>'))}"></iframe>`;
+  const close = () => { S.open = null; render(); };
+  $("#back").onclick = close;
+  $("#rarc").onclick = async () => { await modify(m, [], ["INBOX"]); S.msgs = S.msgs.filter(x => x !== m); toast("Archived 📦"); close(); };
+  $("#rdel").onclick = async () => { await trashMsg(m); S.msgs = S.msgs.filter(x => x !== m); toast("Moved 🗑️"); close(); };
+  $("#runr").onclick = async () => { await modify(m, ["UNREAD"], []); toast("Marked unread"); close(); unreadCount().then(render); };
+  $("#rst").onclick = () => { modify(m, m.starred ? [] : ["STARRED"], m.starred ? ["STARRED"] : []); $("#rst").classList.toggle("on"); };
+  $("#rep").onclick = () => openCompose(m.replyTo || m.email, /^re:/i.test(m.subject) ? m.subject : "Re: " + m.subject, m.threadId);
+}
+let thread;
+function openCompose(to = "", sub = "", tid){
+  thread = tid; $("#mt").textContent = tid ? "Reply" : "New message";
+  $("#to").value = to; $("#sub").value = sub; $("#body").value = "";
+  $("#modal").style.display = "flex"; (to ? $("#body") : $("#to")).focus();
+}
+$("#mx").onclick = () => $("#modal").style.display = "none";
+$("#send").onclick = async () => {
+  const to = $("#to").value.trim(); if (!to) return toast("Add a recipient");
+  $("#send").textContent = "Sending…";
+  try { await sendMail(to, $("#sub").value || "(no subject)", $("#body").value, thread); $("#modal").style.display = "none"; toast("Sent 🚀"); }
+  catch { toast("Couldn't send"); }
+  $("#send").textContent = "Send";
+};
+$("#compose").onclick = () => openCompose();
+$("#refresh").onclick = () => { S.open = null; list(true); unreadCount().then(render); };
+$("#menu").onclick = () => $("#side").classList.toggle("open");
+$("#q").addEventListener("keydown", e => { if (e.key === "Enter"){ S.q = e.target.value.trim(); S.open = null; list(true); } });
+$("#signin").onclick = signIn;
+$("#demo").onclick = () => { S.demo = true; S.user = {name:"Aditya", email:"demo"}; start(); };
+document.addEventListener("keydown", e => {
+  if (/INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  if (e.key === "/"){ e.preventDefault(); $("#q").focus(); }
+  if (e.key === "c") openCompose();
+  if (e.key === "Escape"){ S.open = null; $("#modal").style.display = "none"; render(); }
+});
+</script>
+</body>
+</html>
